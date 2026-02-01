@@ -1,0 +1,14 @@
+{
+  "model": "Support Vector Machine (LinearSVC)",
+  "accuracy": 0.997,
+  "emergency_recall": 1.0,
+  "emergency_precision": 0.989,
+  "training_samples": 5328,
+  "test_samples": 1333,
+  "features": 1000,
+  "classes": [
+    "Emergency",
+    "Non-urgent",
+    "Urgent"
+  ]
+}
