@@ -1,0 +1,43 @@
+# Virtual Environment
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Generated Files
+dengue_data.db
+dengue_predictions.csv
+models/
+*.joblib
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Large Data Files
+*.csv.gz
+*.zip
+*.tar.gz
+
+# Logs
+*.log
+logs/
+
+# Temporary Files
+*.tmp
+*.temp
