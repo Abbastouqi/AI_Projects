@@ -1,331 +1,294 @@
-# AI Laptop Recommendation Chatbot for Pakistani Students
+# 🤖 AI-Powered Laptop Recommendation Chatbot for Pakistani Students
 
-An intelligent, context-aware chatbot that recommends laptops based on student needs using advanced conversation flow management and RAG (Retrieval Augmented Generation).
+An intelligent chatbot that helps Pakistani students find the perfect laptop based on their needs, budget, and use case. Built with FastAPI, Next.js, and AI-powered conversation flow.
 
-## 🌟 Key Features
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)
+![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-### 💬 Intelligent Conversation Flow
-- **Intent Detection**: Automatically classifies user messages (greeting, budget, use case, comparison, purchase help)
-- **State Management**: Tracks conversation progress from greeting → needs analysis → budget → recommendations
-- **User Profiling**: Remembers student type (FSC/Uni), major, use case, budget, and brand preferences
-- **Context-Aware**: References previous messages and maintains conversation history
-- **Pakistani Market Context**: Includes local pricing from Czone, Paklap, Daraz
+## ✨ Features
 
-### 🎨 Modern Chat Interface
-- Dark-themed UI with glassmorphism effects
-- Animated laptop hero section
-- Quick reply buttons (FSC Student, Programming, 80k Budget, etc.)
-- Laptop comparison view (select 2-3 laptops side-by-side)
-- Session persistence with localStorage
-- Typing indicators and smooth animations
-- Fully responsive mobile design
+- 🎓 **Student-Focused**: Tailored for FSC and university students in Pakistan
+- 💰 **Budget-Aware**: Recommendations based on PKR budget (50k - 250k+)
+- 🎯 **Use-Case Detection**: Programming, Gaming, Office Work, Engineering, etc.
+- 🇵🇰 **Local Market Integration**: Prices from Czone, Paklap, Daraz, Telemart
+- 💬 **Conversational AI**: Natural language understanding with intent detection
+- 🔍 **Smart Comparison**: Compare multiple laptops side-by-side
+- 📊 **16+ Laptops Database**: HP, Dell, Lenovo, ASUS with real specs
+- 🌐 **Web Scraping**: Automated data collection from Pakistani e-commerce sites
 
-### 🕷️ Professional Web Scraper
-- Scrapes Pakistani e-commerce sites (Czone.pk, Paklap.pk, Telemart.pk)
-- Extracts full specs: CPU, RAM, Storage, GPU, Display, Price
-- Smart data cleaning and normalization
-- CPU generation detection (Intel 12th gen, Ryzen 5000)
-- Auto-categorization (Programming, Gaming, FSC Student, Video Editing)
-- Rate limiting and user-agent rotation
-- Direct PostgreSQL/SQLite insertion
+## 🏗️ Architecture
 
-### 🗄️ Robust Database
-- SQLAlchemy ORM with 3 tables (Laptop, UserSession, Recommendation)
-- 16 sample Pakistani laptops (72k - 225k PKR)
-- Full CRUD API with FastAPI
-- Budget filtering, category search
-- Recommendation tracking and analytics
+```
+├── backend/              # FastAPI Backend
+│   ├── api/             # REST API endpoints
+│   ├── models/          # SQLAlchemy models & schemas
+│   ├── services/        # Business logic & AI services
+│   └── scripts/         # Database initialization
+├── frontend/            # Next.js Frontend (React + TypeScript)
+│   ├── app/            # Next.js 14 app directory
+│   ├── components/     # React components
+│   └── types/          # TypeScript definitions
+├── scraper/            # Scrapy web scraper
+│   └── scrapy_project/ # Spider implementations
+├── data/               # Laptop data (JSON)
+└── simple-chat.html    # Standalone HTML interface
+```
 
 ## 🚀 Quick Start
 
-### 1. Backend Setup (2 minutes)
+### Prerequisites
+
+- Python 3.9+
+- Node.js 18+ (optional, for Next.js frontend)
+- pip or uv for Python packages
+
+### 1. Clone the Repository
 
 ```bash
-cd backend
-pip install -r requirements.txt
-copy .env.example .env
-# Add your OpenAI API key to .env
-python scripts/init_database.py
-python main.py
+git clone https://github.com/Abbastouqi/AI_Projects.git
+cd AI_Projects
 ```
 
-Backend runs at: http://localhost:8000
+### 2. Backend Setup
 
-### 2. Frontend Setup (2 minutes)
+```bash
+# Create virtual environment
+python -m venv .venv
 
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Create .env file (optional)
+cp backend/.env.example backend/.env
+
+# Run the backend
+python backend/main.py
+```
+
+Backend will start at: **http://localhost:8000**
+
+### 3. Start Chatting!
+
+**Option A: Simple HTML Interface (Recommended)**
+1. Open `simple-chat.html` in your browser
+2. Start chatting immediately!
+
+**Option B: API Documentation**
+- Visit: http://localhost:8000/docs
+- Test the `/api/chat` endpoint directly
+
+**Option C: Next.js Frontend (Advanced)**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+Visit: http://localhost:3000
 
-Frontend runs at: http://localhost:3000
+## 💬 Example Conversations
 
-### 3. Try It Out!
-
-Open http://localhost:3000 and chat:
-- "I'm an FSC student with 80k budget"
-- "I need a laptop for programming"
-- "Compare HP vs Dell laptops"
-
-## 📋 Project Structure
+Try these messages:
 
 ```
-├── backend/                    # FastAPI backend
-│   ├── api/                   # API routes
-│   │   ├── routes.py         # Chat endpoints
-│   │   └── laptop_routes.py  # Laptop CRUD
-│   ├── core/                  # Configuration
-│   ├── models/                # SQLAlchemy models & Pydantic schemas
-│   │   ├── database.py       # Laptop, UserSession, Recommendation
-│   │   ├── schemas.py        # API validation schemas
-│   │   └── seed_data.py      # 16 sample Pakistani laptops
-│   ├── services/              # Business logic
-│   │   ├── conversation_manager.py  # Intent detection & flow
-│   │   ├── laptop_service.py        # Laptop operations
-│   │   └── rag_service.py           # RAG with ChromaDB
-│   ├── scripts/               # Utility scripts
-│   │   └── init_database.py  # Database initialization
-│   └── tests/                 # Unit tests
-├── frontend/                   # Next.js 14 frontend
-│   ├── app/                   # App router
-│   │   ├── page.tsx          # Home page
-│   │   ├── layout.tsx        # Root layout
-│   │   └── globals.css       # Global styles
-│   ├── components/            # React components
-│   │   ├── ChatInterface.tsx      # Main chat
-│   │   ├── MessageBubble.tsx      # Message display
-│   │   ├── LaptopCard.tsx         # Laptop specs card
-│   │   ├── QuickReplies.tsx       # Quick reply buttons
-│   │   └── ComparisonView.tsx     # Side-by-side comparison
-│   └── types/                 # TypeScript types
-├── scraper/                    # Scrapy web scraper
-│   ├── scrapy_project/
-│   │   └── laptop_scraper/
-│   │       ├── spiders/       # Site-specific spiders
-│   │       │   ├── czone_spider.py
-│   │       │   ├── paklap_spider.py
-│   │       │   └── telemart_spider.py
-│   │       ├── pipelines.py   # Data cleaning & DB insertion
-│   │       ├── items.py       # Data structure
-│   │       └── settings.py    # Scraper configuration
-│   └── run_all_spiders.py     # Run all scrapers
-└── data/                       # Data storage
-    └── laptops.json           # Sample laptop data
+"Hi, I'm an FSC student looking for a laptop"
+"I need a laptop for programming under 80,000 PKR"
+"Show me gaming laptops"
+"Compare HP and Dell laptops"
+"السلام علیکم" (Urdu greeting)
+"What's the best laptop for engineering students?"
 ```
 
-## 🎯 Conversation Flow System
+## 🗄️ Database
 
-### Intent Detection
-The system automatically detects user intent:
-- **Greeting**: "hi", "hello", "salam"
-- **Budget Query**: "80k to 120k", "budget 100000"
-- **Use Case**: "programming", "fsc student", "gaming"
-- **Comparison**: "compare", "hp vs dell"
-- **Purchase Help**: "where to buy", "czone", "daraz"
+The chatbot uses SQLite with 3 main tables:
 
-### State Management
-Tracks conversation progress:
-1. **Greeting** → Welcome message
-2. **Needs Analysis** → Ask about use case
-3. **Budget Check** → Determine price range
-4. **Recommendation** → Show matching laptops
-5. **Comparison** → Compare selected laptops
+1. **Laptop**: 16 pre-loaded Pakistani laptops with specs and prices
+2. **UserSession**: Conversation history and user preferences
+3. **Recommendation**: Tracking of recommended laptops
 
-### User Profiling
-Remembers throughout conversation:
-- Student type (FSC, University)
-- Major (CS, Engineering, Medical)
-- Use cases (Programming, Gaming, Office)
-- Budget range (min/max in PKR)
-- Brand preferences (HP, Dell, Lenovo)
-
-### Example Flow
-
-```
-User: "Hi"
-Bot: [Greeting] "السلام علیکم! Welcome to Pakistan's smartest laptop assistant..."
-
-User: "I'm an FSC pre-engineering student"
-Bot: [Detects student_type=FSC] "What's your budget in PKR?"
-
-User: "Around 80k"
-Bot: [Extracts budget=80k±20%] Shows budget recommendations + refurbished options
-
-User: "I also need it for programming"
-Bot: [Updates use_case] Emphasizes RAM and processor, shows suitable laptops
-```
-
-## 🕷️ Web Scraper Usage
-
-### Run Individual Spider
+Initialize database:
 ```bash
-cd scraper/scrapy_project
-scrapy crawl telemart  # Scrape Telemart.pk
-scrapy crawl paklap    # Scrape Paklap.pk
-scrapy crawl czone     # Scrape Czone.pk
+python backend/scripts/init_database.py
 ```
 
-### Run All Spiders
+## 🕷️ Web Scraper
+
+Scrape laptop data from Pakistani e-commerce sites:
+
 ```bash
 cd scraper/scrapy_project
 python run_all_spiders.py
 ```
 
-### Data Processing
-- **RAM**: "8GB DDR4" → 8
-- **Storage**: "512GB SSD" → 512, "SSD"
-- **Price**: "Rs. 125,000" → 125000
-- **CPU Gen**: "i5-1235U" → "12th Gen Intel"
-
-### Auto-Categorization
-- **Programming**: RAM ≥ 8GB + i5/Ryzen 5
-- **Gaming**: Dedicated GPU + RAM ≥ 8GB
-- **FSC Student**: Price < 90k or i3/Ryzen 3
-- **Video Editing**: RAM ≥ 16GB + i7/Ryzen 7
-
-## 🎨 Frontend Features
-
-### Chat Interface
-- Session persistence (localStorage)
-- Auto-scroll to latest message
-- Loading states with typing indicator
-- Quick reply buttons for common queries
-
-### Laptop Cards
-- Gradient design with specs
-- Price badge in PKR
-- Compare button
-- View details link
-
-### Comparison View
-- Side-by-side spec comparison
-- Winner badge (best value)
-- Modal overlay with glassmorphism
-
-## 🗄️ Database
-
-### Sample Data
-16 Pakistani laptops included:
-- **Budget (60k-90k)**: HP 15s, Lenovo V15, Dell Inspiron
-- **Mid-range (100k-140k)**: HP Pavilion, Lenovo IdeaPad, ASUS VivoBook
-- **Premium (150k+)**: HP Envy, Dell Inspiron 16, Lenovo ThinkBook
-
-### API Endpoints
-```
-POST /api/chat                        # Chat with bot
-GET  /api/laptops/                    # List all laptops
-GET  /api/laptops/budget/80000/120000 # Filter by budget
-GET  /api/laptops/category/Programming # Filter by category
-POST /api/laptops/search              # Advanced search
-GET  /api/session/{session_id}        # Get conversation history
-```
-
-## 🔧 Tech Stack
-
-**Backend:**
-- FastAPI (API framework)
-- SQLAlchemy (ORM)
-- OpenAI GPT-4 (AI recommendations)
-- ChromaDB (Vector store)
-- LangChain (RAG pipeline)
-
-**Frontend:**
-- Next.js 14 (React framework)
-- TypeScript (Type safety)
-- Tailwind CSS (Styling)
-- Axios (HTTP client)
-
-**Scraper:**
-- Scrapy (Web scraping)
-- BeautifulSoup (HTML parsing)
-- SQLAlchemy (Database)
-
-## 📚 Documentation
-
-- **Complete Setup**: `COMPLETE_SETUP_GUIDE.md`
-- **Database Guide**: `backend/README_DATABASE.md`
-- **Scraper Guide**: `scraper/README_SCRAPER.md`
-- **Quick Start**: `backend/QUICKSTART.md`
-
-## 🎓 Use Cases
-
-### FSC Pre-Engineering Student
-- Budget: 70k-90k PKR
-- Needs: Notes, PDFs, online classes
-- Recommendation: HP 15s, Lenovo V15 (i3, 8GB RAM)
-
-### CS/Programming Student
-- Budget: 100k-140k PKR
-- Needs: IDEs, compilers, multitasking
-- Recommendation: Lenovo IdeaPad 3, HP 15s (i5, 8GB+ RAM, SSD)
-
-### Engineering Student
-- Budget: 140k-200k PKR
-- Needs: CAD, MATLAB, heavy software
-- Recommendation: HP Pavilion, Dell Inspiron (i7, 16GB RAM)
-
-## 🌟 Pakistani Market Context
-
-### Trusted Sellers
-- **Czone.pk**: Competitive prices, Karachi-based
-- **Paklap.pk**: Wide selection, Lahore & Islamabad
-- **Daraz.pk**: 0% installments, buyer protection
-- **Telemart.pk**: Good deals, multiple payment options
-
-### Service Centers
-- **HP**: Excellent in major cities
-- **Dell**: Good availability
-- **Lenovo**: Decent coverage
-- **ASUS**: Limited centers
-
-## 🚀 Deployment
-
-### Backend (Railway/Render)
-```bash
-# Set environment variables
-OPENAI_API_KEY=sk-...
-DATABASE_URL=postgresql://...
-```
-
-### Frontend (Vercel)
-```bash
-# Set environment variable
-NEXT_PUBLIC_API_URL=https://your-backend.railway.app
-```
+Supported sites:
+- Czone.pk
+- Paklap.pk
+- Telemart.pk
 
 ## 🧪 Testing
 
-```bash
-# Backend tests
-cd backend
-pytest tests/ -v
+Test the backend API:
 
-# Test API
-python main.py
-# Visit http://localhost:8000/docs
+```bash
+python test_chat_working.py
+```
+
+Expected output:
+```
+✅ Backend is running!
+✅ Chat endpoint is working!
+✅ Laptops endpoint working! Found 16 laptops in database
+🎉 ALL TESTS PASSED!
+```
+
+## 📁 Project Structure
+
+```
+backend/
+├── api/
+│   ├── routes.py              # Chat endpoints
+│   └── laptop_routes.py       # Laptop CRUD endpoints
+├── models/
+│   ├── database.py            # SQLAlchemy models
+│   ├── schemas.py             # Pydantic schemas
+│   └── seed_data.py           # Sample laptop data
+├── services/
+│   ├── conversation_manager.py    # Conversation flow logic
+│   ├── laptop_service.py          # Laptop business logic
+│   ├── recommendation_engine.py   # Recommendation algorithm
+│   └── intent_detector.py         # Intent classification
+└── main.py                    # FastAPI application
+
+frontend/
+├── components/
+│   ├── ChatInterface.tsx      # Main chat UI
+│   ├── MessageBubble.tsx      # Chat messages
+│   ├── LaptopCard.tsx         # Laptop display cards
+│   ├── QuickReplies.tsx       # Quick reply buttons
+│   └── ComparisonView.tsx     # Laptop comparison
+└── app/
+    └── page.tsx               # Home page
+
+scraper/
+└── scrapy_project/
+    └── laptop_scraper/
+        ├── spiders/           # Web scrapers
+        └── pipelines.py       # Data processing
+```
+
+## 🎯 Key Features Explained
+
+### Intent Detection
+The chatbot recognizes 6 types of user intents:
+- Greeting
+- Budget Query
+- Use Case Query
+- Comparison Request
+- Specific Laptop Question
+- Purchase Help
+
+### Conversation Flow
+1. **Greeting** → Welcome message
+2. **Needs Analysis** → Ask about use case
+3. **Budget Check** → Determine price range
+4. **Recommendation** → Suggest laptops
+5. **Comparison** → Compare selected laptops
+
+### Recommendation Engine
+Filters laptops based on:
+- Budget range (PKR)
+- Use case (programming, gaming, office, etc.)
+- Student type (FSC, University)
+- Brand preference
+- Specifications (RAM, CPU, Storage)
+
+## 🛠️ Technologies Used
+
+**Backend:**
+- FastAPI - Modern Python web framework
+- SQLAlchemy - ORM for database
+- Pydantic - Data validation
+- Uvicorn - ASGI server
+
+**Frontend:**
+- Next.js 14 - React framework
+- TypeScript - Type safety
+- Tailwind CSS - Styling
+- React Hooks - State management
+
+**Scraper:**
+- Scrapy - Web scraping framework
+- BeautifulSoup - HTML parsing
+
+## 📝 API Endpoints
+
+### Chat Endpoints
+- `POST /api/chat` - Send message and get response
+- `GET /api/health` - Health check
+- `GET /api/session/{session_id}` - Get conversation history
+
+### Laptop Endpoints
+- `GET /api/laptops` - Get all laptops
+- `GET /api/laptops/{id}` - Get specific laptop
+- `POST /api/laptops` - Add new laptop
+- `PUT /api/laptops/{id}` - Update laptop
+- `DELETE /api/laptops/{id}` - Delete laptop
+
+## 🔧 Configuration
+
+### Backend (.env)
+```env
+DATABASE_URL=sqlite:///./laptop_recommendations.db
+PORT=8000
+OPENAI_API_KEY=your_key_here  # Optional for RAG
+```
+
+### Frontend (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ## 🤝 Contributing
 
+Contributions are welcome! Please feel free to submit a Pull Request.
+
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License - Free for educational and commercial use
+This project is licensed under the MIT License.
+
+## 👨‍💻 Author
+
+**Abbas Touqi**
+- Email: abbastouqeer399@gmail.com
+- GitHub: [@Abbastouqi](https://github.com/Abbastouqi)
 
 ## 🙏 Acknowledgments
 
-- OpenAI for GPT-4 API
-- Pakistani e-commerce sites for data
-- FastAPI, Next.js, Scrapy communities
+- Pakistani e-commerce sites for laptop data
+- FastAPI and Next.js communities
+- All contributors and users
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+1. Check the [Issues](https://github.com/Abbastouqi/AI_Projects/issues) page
+2. Create a new issue with detailed description
+3. Email: abbastouqeer399@gmail.com
 
 ---
 
-**Built with ❤️ for Pakistani students**
-
-Need help? Check `COMPLETE_SETUP_GUIDE.md` or open an issue!
+⭐ If you find this project helpful, please give it a star!
