@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Finder Pakistan - AI Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .hero .emoji {
+            font-size: 4em;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(to bottom, #f9fafb, white);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #1f2937;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin: 0 10px;
+        }
+
+        .message.bot .avatar {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+
+        .message.user .avatar {
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+        }
+
+        .quick-replies {
+            padding: 15px;
+            background: linear-gradient(to right, #eef2ff, #f3e8ff);
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .quick-replies-title {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .quick-replies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .quick-reply-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 10px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-reply-btn:hover {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            transform: scale(1.05);
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #messageInput:focus {
+            border-color: #4f46e5;
+        }
+
+        #sendBtn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.2s;
+        }
+
+        #sendBtn:hover {
+            transform: scale(1.05);
+        }
+
+        #sendBtn:active {
+            transform: scale(0.95);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .laptop-card {
+            background: linear-gradient(135deg, #eef2ff, #f3e8ff);
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .laptop-card h3 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .laptop-price {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .laptop-specs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.9em;
+            color: #4b5563;
+        }
+
+        .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="emoji">💻</div>
+            <h1>Laptop Finder Pakistan</h1>
+            <p>AI-powered recommendations for Pakistani students</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message bot">
+                    <div class="avatar">🤖</div>
+                    <div class="message-content">
+                        السلام علیکم! Welcome to Pakistan's smartest laptop recommendation assistant! 🎓💻<br><br>
+                        I'm here to help Pakistani students find the perfect laptop within their budget.<br><br>
+                        To get started, tell me:<br>
+                        1. What will you use the laptop for?<br>
+                        2. What's your budget in PKR?
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-replies">
+                <div class="quick-replies-title">Quick Replies:</div>
+                <div class="quick-replies-grid">
+                    <button class="quick-reply-btn" onclick="sendQuickReply('I am an FSC student')">
+                        📚 FSC Student
+                    </button>
+                    <button class="quick-reply-btn" onclick="sendQuickReply('I need a laptop for programming')">
+                        💻 Programming
+                    </button>
+                    <button class="quick-reply-btn" onclick="sendQuickReply('My budget is around 80,000 PKR')">
+                        💰 80k Budget
+                    </button>
+                    <button class="quick-reply-btn" onclick="sendQuickReply('I want a gaming laptop')">
+                        🎮 Gaming
+                    </button>
+                    <button class="quick-reply-btn" onclick="sendQuickReply('I need it for office work')">
+                        📊 Office Work
+                    </button>
+                    <button class="quick-reply-btn" onclick="sendQuickReply('I am an engineering student')">
+                        🔧 Engineering
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Ask about laptops, budget, or where to buy..."
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button id="sendBtn" onclick="sendMessage()">📤</button>
+                </div>
+                <div class="footer-note">
+                    Powered by AI • Pakistani Market Data • Real-time Prices
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api/chat';
+        let sessionId = localStorage.getItem('laptop_chat_session');
+
+        function addMessage(content, isUser = false, recommendations = null) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            let html = `
+                <div class="avatar">${isUser ? '👤' : '🤖'}</div>
+                <div class="message-content">${content}`;
+            
+            if (recommendations && recommendations.length > 0) {
+                recommendations.forEach(laptop => {
+                    html += `
+                        <div class="laptop-card">
+                            <h3>${laptop.name}</h3>
+                            <div class="laptop-price">PKR ${laptop.price_pkr.toLocaleString()}</div>
+                            <div class="laptop-specs">
+                                <div class="spec-item">⚡ ${laptop.processor}</div>
+                                <div class="spec-item">💾 ${laptop.ram}</div>
+                                <div class="spec-item">💿 ${laptop.storage}</div>
+                                <div class="spec-item">🖥️ ${laptop.display}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += `</div>`;
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTyping() {
+            const messagesDiv = document.getElementById('messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="avatar">🤖</div>
+                <div class="typing-indicator active">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, true);
+            input.value = '';
+            
+            // Show typing indicator
+            showTyping();
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Save session ID
+                if (data.session_id) {
+                    sessionId = data.session_id;
+                    localStorage.setItem('laptop_chat_session', sessionId);
+                }
+                
+                // Hide typing and add bot response
+                hideTyping();
+                addMessage(data.response, false, data.recommendations);
+                
+            } catch (error) {
+                hideTyping();
+                addMessage('Sorry, I encountered an error. Please make sure the backend server is running at http://localhost:8000', false);
+                console.error('Error:', error);
+            }
+        }
+
+        function sendQuickReply(message) {
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Check backend connection on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/health');
+                if (response.ok) {
+                    console.log('✅ Backend connected successfully!');
+                }
+            } catch (error) {
+                console.error('⚠️ Backend not connected. Make sure to run: python backend/main.py');
+                addMessage('⚠️ Backend server not detected. Please start the backend with: python backend/main.py', false);
+            }
+        });
+    </script>
+</body>
+</html>

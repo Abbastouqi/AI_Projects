@@ -1,0 +1,62 @@
+[
+  {
+    "name": "HP 15s-fq5007tu",
+    "brand": "HP",
+    "processor": "Intel Core i3-1215U",
+    "ram": "8GB DDR4",
+    "storage": "512GB SSD",
+    "display": "15.6\" FHD",
+    "graphics": "Intel UHD",
+    "price_pkr": 85000,
+    "category": "FSC Student",
+    "url": "https://example.com/hp-15s"
+  },
+  {
+    "name": "Lenovo IdeaPad 3",
+    "brand": "Lenovo",
+    "processor": "Intel Core i5-1235U",
+    "ram": "8GB DDR4",
+    "storage": "512GB SSD",
+    "display": "15.6\" FHD",
+    "graphics": "Intel Iris Xe",
+    "price_pkr": 105000,
+    "category": "Programming",
+    "url": "https://example.com/lenovo-ideapad3"
+  },
+  {
+    "name": "Dell Inspiron 15 3520",
+    "brand": "Dell",
+    "processor": "Intel Core i5-1235U",
+    "ram": "8GB DDR4",
+    "storage": "512GB SSD",
+    "display": "15.6\" FHD",
+    "graphics": "Intel Iris Xe",
+    "price_pkr": 110000,
+    "category": "Programming",
+    "url": "https://example.com/dell-inspiron"
+  },
+  {
+    "name": "ASUS VivoBook 15",
+    "brand": "ASUS",
+    "processor": "AMD Ryzen 5 5500U",
+    "ram": "8GB DDR4",
+    "storage": "512GB SSD",
+    "display": "15.6\" FHD",
+    "graphics": "AMD Radeon",
+    "price_pkr": 95000,
+    "category": "FSC Student",
+    "url": "https://example.com/asus-vivobook"
+  },
+  {
+    "name": "Acer Aspire 5",
+    "brand": "Acer",
+    "processor": "Intel Core i5-1235U",
+    "ram": "16GB DDR4",
+    "storage": "512GB SSD",
+    "display": "15.6\" FHD",
+    "graphics": "Intel Iris Xe",
+    "price_pkr": 125000,
+    "category": "Programming",
+    "url": "https://example.com/acer-aspire5"
+  }
+]

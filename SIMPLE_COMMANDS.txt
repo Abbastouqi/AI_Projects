@@ -1,0 +1,47 @@
+═══════════════════════════════════════════════════════════════
+  🚀 START FRONTEND - COPY THESE COMMANDS
+═══════════════════════════════════════════════════════════════
+
+STEP 1: Open Command Prompt or PowerShell
+        (Press Windows Key + R, type "cmd", press Enter)
+
+STEP 2: Copy and paste this command:
+
+        cd D:\Fetch_laptop\frontend
+
+STEP 3: Copy and paste this command:
+
+        npm run dev
+
+STEP 4: Wait 5-10 seconds until you see:
+        "✓ Ready in 3.2s"
+        "○ Local: http://localhost:3000"
+
+STEP 5: Open your browser and go to:
+
+        http://localhost:3000
+
+═══════════════════════════════════════════════════════════════
+
+🎯 ONE-LINE COMMAND (Copy-Paste Everything):
+
+cd D:\Fetch_laptop\frontend && npm run dev
+
+═══════════════════════════════════════════════════════════════
+
+✅ WHAT YOU'LL SEE IN BROWSER:
+
+   💻 Laptop Finder Pakistan
+   AI-powered recommendations for Pakistani students
+   
+   [Chat interface with message input]
+   [Quick reply buttons: FSC Student, Programming, 80k Budget, etc.]
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ IF IT DOESN'T WORK:
+
+Use the backend API instead (works perfectly!):
+Open browser: http://localhost:8000/docs
+
+═══════════════════════════════════════════════════════════════

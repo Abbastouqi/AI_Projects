@@ -1,0 +1,6 @@
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==5.1.0
+scrapy==2.11.0
+itemadapter==0.8.0
+sqlalchemy==2.0.25
