@@ -1,0 +1,78 @@
+{
+  "name": "recruitment-automation-system",
+  "version": "1.0.0",
+  "description": "AI-Powered Recruitment Automation System with resume parsing, candidate screening, ranking, and interview scheduling",
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "recruitment",
+    "hiring",
+    "automation",
+    "ai",
+    "nlp",
+    "resume-parsing",
+    "candidate-screening",
+    "openai",
+    "streamlit"
+  ],
+  "python_version": "3.8+",
+  "modules": {
+    "config": "Configuration management",
+    "database": "SQLite database operations",
+    "resume_parser": "Resume parsing and information extraction",
+    "screening": "AI-powered candidate screening",
+    "ranking": "NLP-based candidate ranking",
+    "interview_scheduler": "Interview scheduling and management"
+  },
+  "features": {
+    "resume_parsing": {
+      "supported_formats": ["PDF", "DOCX", "TXT"],
+      "extracts": [
+        "Name and contact info",
+        "Skills identification",
+        "Experience duration",
+        "Education level"
+      ]
+    },
+    "screening": {
+      "method": "OpenAI GPT API",
+      "scoring": "0.0 - 1.0 scale",
+      "includes_feedback": true,
+      "fallback_mode": true
+    },
+    "ranking": {
+      "method": "TF-IDF + Skill Matching",
+      "factors": [
+        "Text similarity (40%)",
+        "Skill match (40%)",
+        "Experience relevance (20%)"
+      ]
+    },
+    "scheduling": {
+      "conflict_detection": true,
+      "meeting_links": true,
+      "email_templates": true,
+      "working_hours": "9 AM - 5 PM"
+    }
+  },
+  "tech_stack": {
+    "frontend": "Streamlit",
+    "backend": "Python",
+    "ai": "OpenAI GPT",
+    "ml": "scikit-learn, spacy",
+    "database": "SQLite",
+    "data_processing": "Pandas, NumPy",
+    "pdf": "PyPDF2",
+    "documents": "python-docx"
+  },
+  "startup_commands": {
+    "windows": "run.bat",
+    "macos_linux": "./run.sh"
+  },
+  "documentation": {
+    "setup": "SETUP.md",
+    "quick_start": "QUICKSTART.md",
+    "api": "API_REFERENCE.md",
+    "readme": "README.md"
+  }
+}

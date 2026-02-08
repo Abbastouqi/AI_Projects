@@ -7,8 +7,11 @@ __pycache__/
 env/
 venv/
 ENV/
-.venv
+.venv/
 *.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Node
 node_modules/
@@ -19,9 +22,13 @@ dist/
 
 # Environment
 .env
+.env.*
 .env.local
 
-# ChromaDB
+# App data
+resumes/
+data/
+.streamlit/
 chroma_db/
 
 # Database
