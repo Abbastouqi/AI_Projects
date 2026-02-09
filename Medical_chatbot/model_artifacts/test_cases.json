@@ -1,0 +1,14 @@
+{
+  "emergency": [
+    "I have severe chest pain and I can't breathe properly",
+    "My son has a high fever and he's not responding normally"
+  ],
+  "urgent": [
+    "There's a lot of blood from my cut and it won't stop",
+    "I feel sad and anxious about my work"
+  ],
+  "non_urgent": [
+    "I have a small pimple on my nose",
+    "My ankle hurts a bit after jogging yesterday"
+  ]
+}
