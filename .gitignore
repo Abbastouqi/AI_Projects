@@ -66,3 +66,20 @@ config.json
 
 # Logs
 *.log
+
+# Browser profiles and cache
+browser_profile/
+**/browser_profile/
+**/Cache/
+**/Code Cache/
+**/GPUCache/
+
+# Generated documents
+documents/
+**/documents/*.docx
+**/documents/*.pdf
+**/documents/*.pptx
+
+# Credentials
+**/credentials.json
+**/data/credentials.json

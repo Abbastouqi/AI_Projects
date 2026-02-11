@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC AI Assistant - Admissions Automation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            padding: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .new-task-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .new-task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #71717a;
+            font-weight: 600;
+            padding: 10px 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .menu-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: #71717a;
+            font-size: 16px;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 10px;
+        }
+
+        .message {
+            padding: 16px 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.assistant {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            align-self: flex-start;
+        }
+
+        .message.user {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            align-self: flex-end;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .action-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .action-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .action-desc {
+            font-size: 13px;
+            color: #71717a;
+        }
+
+        /* Input Area */
+        .input-area {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .input-area:focus-within {
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .input-area input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-area input::placeholder {
+            color: #71717a;
+        }
+
+        .input-btn {
+            background: none;
+            border: none;
+            color: #71717a;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+
+        .input-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.running {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .status-badge.done {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .status-badge.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Jobs Panel */
+        .jobs-panel {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 320px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .jobs-title {
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .job-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .job-id {
+            color: #71717a;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🎓</div>
+            <span>PC AI Assistant</span>
+        </div>
+
+        <button class="new-task-btn" onclick="showWelcome()">
+            <span>✨</span>
+            <span>New Task</span>
+        </button>
+
+        <div class="menu-section">
+            <div class="menu-title">Actions</div>
+            <div class="menu-item active" onclick="showWelcome()">
+                <span>🏠</span>
+                <span>Home</span>
+            </div>
+            <div class="menu-item" onclick="showLoginModal()">
+                <span>🔐</span>
+                <span>Login</span>
+            </div>
+            <div class="menu-item" onclick="showRegisterModal()">
+                <span>📝</span>
+                <span>Register</span>
+            </div>
+            <div class="menu-item" onclick="showApplyModal()">
+                <span>🎯</span>
+                <span>Apply</span>
+            </div>
+            <div class="menu-item" onclick="showPolicies()">
+                <span>📋</span>
+                <span>Policies</span>
+            </div>
+            <div class="menu-item" onclick="showCreateDocModal()">
+                <span>📄</span>
+                <span>Create Document</span>
+            </div>
+            <div class="menu-item" onclick="showCreatePPTModal()">
+                <span>📊</span>
+                <span>Create Presentation</span>
+            </div>
+        </div>
+
+        <div class="menu-section" style="margin-top: auto;">
+            <div class="menu-title">Status</div>
+            <div class="menu-item">
+                <span>⚡</span>
+                <span id="statusText">Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>What can I do for you?</h1>
+            <p>Automate your university admissions with AI</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" id="quickActions">
+            <div class="action-card" onclick="showLoginModal()">
+                <div class="action-icon">🔐</div>
+                <div class="action-title">Login</div>
+                <div class="action-desc">Access your admissions portal</div>
+            </div>
+            <div class="action-card" onclick="showRegisterModal()">
+                <div class="action-icon">📝</div>
+                <div class="action-title">Register</div>
+                <div class="action-desc">Create a new account</div>
+            </div>
+            <div class="action-card" onclick="showApplyModal()">
+                <div class="action-icon">🎯</div>
+                <div class="action-title">Apply</div>
+                <div class="action-desc">Submit admission application</div>
+            </div>
+            <div class="action-card" onclick="showPolicies()">
+                <div class="action-icon">📋</div>
+                <div class="action-title">Policies</div>
+                <div class="action-desc">View university rules & policies</div>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer"></div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <button class="input-btn" onclick="attachFile()">📎</button>
+            <input type="text" id="messageInput" placeholder="Ask anything or describe your task..." onkeypress="handleKeyPress(event)">
+            <button class="input-btn" onclick="startVoice()">🎤</button>
+            <button class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Jobs Panel -->
+    <div class="jobs-panel">
+        <div class="jobs-title">
+            <span>📊</span>
+            <span>Active Jobs</span>
+        </div>
+        <div id="jobsList"></div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">🔐 Login to Portal</div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="loginRemember">
+                <label>Remember me on this device</label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('loginModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitLogin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">📝 Create Account</div>
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="regName" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mobile</label>
+                <input type="tel" class="form-input" id="regMobile" placeholder="03xxxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="regEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="regPassword" placeholder="••••••••">
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="regRemember">
+                <label>Remember me on this device</label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('registerModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitRegister()">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply Modal -->
+    <div class="modal" id="applyModal">
+        <div class="modal-content">
+            <div class="modal-header">🎯 Apply for Admission</div>
+            <div class="form-group">
+                <label class="form-label">Email (for login)</label>
+                <input type="email" class="form-input" id="applyEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="applyPassword" placeholder="••••••••">
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="applyValidate" checked>
+                <label>✅ Validate against policies before applying</label>
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="applySubmit">
+                <label>Auto-submit application</label>
+            </div>
+            <div class="form-checkbox">
+                <input type="checkbox" id="applyRemember">
+                <label>Remember credentials</label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('applyModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitApply()">Apply Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Document Modal -->
+    <div class="modal" id="createDocModal">
+        <div class="modal-content">
+            <div class="modal-header">📄 Create Document</div>
+            <div class="form-group">
+                <label class="form-label">Document Title</label>
+                <input type="text" class="form-input" id="docTitle" placeholder="My Document">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Format</label>
+                <select class="form-input" id="docFormat">
+                    <option value="word">Word (.docx)</option>
+                    <option value="pdf">PDF (.pdf)</option>
+                    <option value="markdown">Markdown (.md)</option>
+                    <option value="html">HTML (.html)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Content (one paragraph per line)</label>
+                <textarea class="form-input" id="docContent" rows="10" placeholder="Introduction&#10;This is the first paragraph.&#10;&#10;Main Content&#10;This is the main content."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('createDocModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createDocument()">Create Document</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Presentation Modal -->
+    <div class="modal" id="createPPTModal">
+        <div class="modal-content">
+            <div class="modal-header">📊 Create Google Slides</div>
+            <div class="form-group">
+                <label class="form-label">Presentation Title</label>
+                <input type="text" class="form-input" id="pptTitle" placeholder="My Presentation">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Slides Content (separate slides with blank line)</label>
+                <textarea class="form-input" id="pptSlides" rows="12" placeholder="Welcome&#10;Introduction to the presentation&#10;Created by PC AI Assistant&#10;&#10;Main Points&#10;Point 1: First topic&#10;Point 2: Second topic&#10;Point 3: Third topic"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('createPPTModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createPresentation()">Create Presentation</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=2.0"></script>
+</body>
+</html>

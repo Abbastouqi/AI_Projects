@@ -6,6 +6,8 @@ import webbrowser
 import subprocess
 import os
 import time
+import uuid
+import re
 
 from agent.input_handler import Command
 from agent.web_automation import WebAutomation
@@ -23,6 +25,218 @@ class Task:
 
     def execute(self, command: Command) -> TaskResult:
         raise NotImplementedError
+
+
+class RiphahAutoApplyTask(Task):
+    name = 'riphah_auto_apply'
+    
+    def __init__(self, web: WebAutomation) -> None:
+        self.web = web
+    
+    def execute(self, command: Command) -> TaskResult:
+        """Automatically apply to Riphah University with full automation"""
+        try:
+            # Get user data from command or use defaults
+            user_data = {
+                'email': command.slots.get('email', 'student@example.com'),
+                'password': command.slots.get('password', 'Password123'),
+                'name': command.slots.get('name', 'Muhammad Ahmed Khan'),
+                'fname': command.slots.get('fname', 'Muhammad Ahmed'),
+                'lname': command.slots.get('lname', 'Khan'),
+                'father_name': command.slots.get('father_name', 'Abdul Rahman Khan'),
+                'phone': command.slots.get('phone', '03001234567'),
+                'mobile': command.slots.get('mobile', '03001234567'),
+                'cnic': command.slots.get('cnic', '12345-1234567-1'),
+                'address': command.slots.get('address', 'House 123, Street 45, Islamabad'),
+                'city': command.slots.get('city', 'Islamabad'),
+                'country': command.slots.get('country', 'Pakistan'),
+                'dob': command.slots.get('dob', '01/01/2000'),
+                'gender': command.slots.get('gender', 'Male'),
+                'religion': command.slots.get('religion', 'Islam'),
+                'nationality': command.slots.get('nationality', 'Pakistani'),
+            }
+            
+            # Step 1: Open the portal
+            portal_url = 'https://admissions.riphah.edu.pk/riphah_demo/public/Student/application/List'
+            
+            self.web.start()
+            self.web.open_url(portal_url)
+            self.web.wait(4)  # Wait for page to load
+            
+            # Check if we need to login first
+            current_url = self.web.get_current_url()
+            
+            if 'login' in current_url.lower() or 'Student/application/List' not in current_url:
+                # Attempt automatic login if on login page
+                login_attempted = False
+                
+                # Try to detect and fill login form
+                try:
+                    # Wait a bit more for login page to fully load
+                    self.web.wait(2)
+                    
+                    # Try to fill email/username field
+                    email_filled = (
+                        self.web.fill_input_by_name('email', user_data['email']) or
+                        self.web.fill_input_by_name('username', user_data['email']) or
+                        self.web.fill_input_by_id('email', user_data['email']) or
+                        self.web.fill_input_by_placeholder('Email', user_data['email']) or
+                        self.web.fill_input_by_placeholder('email', user_data['email'])
+                    )
+                    
+                    # Try to fill password field
+                    password_filled = (
+                        self.web.fill_input_by_name('password', user_data['password']) or
+                        self.web.fill_input_by_id('password', user_data['password']) or
+                        self.web.fill_input_by_placeholder('Password', user_data['password'])
+                    )
+                    
+                    if email_filled and password_filled:
+                        login_attempted = True
+                        self.web.wait(1)
+                        
+                        # Try to click login button
+                        login_clicked = (
+                            self.web.click_button_by_text('Login') or
+                            self.web.click_button_by_text('Sign In') or
+                            self.web.click_button_by_text('Submit') or
+                            self.web.press_enter()
+                        )
+                        
+                        if login_clicked:
+                            self.web.wait(3)  # Wait for login to process
+                            current_url = self.web.get_current_url()
+                            
+                            # Check if login was successful
+                            if 'Student/application/List' in current_url or 'dashboard' in current_url.lower():
+                                # Login successful, continue to application
+                                pass
+                            else:
+                                return TaskResult(
+                                    success=True,
+                                    message=(
+                                        '⚠️ Login attempted but may have failed.\n\n'
+                                        f'Current Page: {current_url}\n\n'
+                                        'Please check:\n'
+                                        '• Credentials are correct\n'
+                                        '• Account exists\n'
+                                        '• No CAPTCHA required\n\n'
+                                        '💡 Try manual login or create account first.'
+                                    ),
+                                    data={'status': 'login_failed', 'url': current_url}
+                                )
+                except Exception as login_error:
+                    pass
+                
+                if not login_attempted:
+                    return TaskResult(
+                        success=True,
+                        message=(
+                            '🔐 Riphah Portal Opened - Login Required\n\n'
+                            f'Current Page: {current_url}\n\n'
+                            '📋 To auto-apply, you need to:\n'
+                            '1. Login to your account first\n'
+                            '2. Or create a new account\n\n'
+                            '💡 Manual Login:\n'
+                            '• "fill email with your@email.com"\n'
+                            '• "fill password with YourPassword"\n'
+                            '• "click login"\n\n'
+                            'Or say: "create account" to register'
+                        ),
+                        data={'status': 'login_required', 'url': current_url}
+                    )
+            
+            # Step 2: Try to click "New Application" or similar button
+            try:
+                self.web.wait(2)
+                new_app_clicked = (
+                    self.web.click_button_by_text('New Application') or
+                    self.web.click_button_by_text('Apply Now') or
+                    self.web.click_button_by_text('Start Application') or
+                    self.web.click_button_by_text('Create Application')
+                )
+                
+                if new_app_clicked:
+                    self.web.wait(3)  # Wait for form to load
+            except Exception:
+                pass
+            
+            # Step 3: Auto-fill the application form
+            try:
+                self.web.wait(2)
+                
+                # Use the auto_fill_form method with comprehensive data
+                fill_results = self.web.auto_fill_form(user_data)
+                
+                # Build detailed message
+                message_parts = [
+                    '🤖 RIPHAH AUTO-APPLY IN PROGRESS!\n',
+                    f'📊 Auto-Fill Results:',
+                    f'   • Forms detected: {fill_results.get("forms_found", 0)}',
+                    f'   • Fields found: {fill_results.get("fields_found", 0)}',
+                    f'   • Fields filled: {fill_results.get("fields_filled", 0)}\n'
+                ]
+                
+                if fill_results.get('details'):
+                    message_parts.append('📝 Filled Fields:')
+                    for detail in fill_results['details'][:10]:  # Show first 10
+                        if detail['status'] == '✓':
+                            field_name = detail['field'] or 'field'
+                            message_parts.append(f'   ✓ {field_name}: {detail["value"]}')
+                
+                if fill_results.get('fields_filled', 0) > 0:
+                    message_parts.extend([
+                        '\n✅ Application form auto-filled!',
+                        '\n📋 Next Steps:',
+                        '1. Review the filled information',
+                        '2. Fill any missing fields manually',
+                        '3. Upload required documents',
+                        '4. Click Submit when ready\n',
+                        '💡 Say "click submit" to submit the application',
+                        '💡 Or say "fill [field] with [value]" for manual corrections'
+                    ])
+                else:
+                    message_parts.extend([
+                        '\n⚠️ No form fields detected or filled.',
+                        '\nPossible reasons:',
+                        '• Form not loaded yet',
+                        '• Need to click "New Application" first',
+                        '• Form uses custom fields\n',
+                        '💡 Try: "click new application" first',
+                        '💡 Or use manual filling: "fill name with John Doe"'
+                    ])
+                
+                return TaskResult(
+                    success=fill_results.get('fields_filled', 0) > 0,
+                    message='\n'.join(message_parts),
+                    data={
+                        'status': 'form_filled' if fill_results.get('fields_filled', 0) > 0 else 'form_not_found',
+                        'fill_results': fill_results,
+                        'url': self.web.get_current_url()
+                    }
+                )
+                
+            except Exception as fill_error:
+                return TaskResult(
+                    success=True,
+                    message=(
+                        f'✅ Riphah Portal Opened!\n\n'
+                        f'⚠️ Auto-fill encountered an issue: {str(fill_error)}\n\n'
+                        '📋 Manual Steps:\n'
+                        '1. Click "New Application" if needed\n'
+                        '2. Say "auto fill" to try again\n'
+                        '3. Or fill manually: "fill name with John Doe"\n\n'
+                        '💡 Current URL: {self.web.get_current_url()}'
+                    ),
+                    data={'status': 'manual_required', 'error': str(fill_error)}
+                )
+            
+        except Exception as e:
+            return TaskResult(
+                success=False,
+                message=f'❌ Error: {str(e)}\n\nPlease try opening the portal manually.',
+                data={'error': str(e)}
+            )
 
 
 class AdmissionsTask(Task):
@@ -297,6 +511,255 @@ class AdmissionDatesTask(Task):
             )
 
 
+class SendEmailTask(Task):
+    name = 'send_email'
+
+    def __init__(self, web: WebAutomation) -> None:
+        self.web = web
+        self.pending_email: Optional[dict] = None
+        self.pending_task_id: Optional[str] = None
+        self.awaiting_login: bool = False
+
+    def resume_if_ready(self, text: str) -> Optional[TaskResult]:
+        if not self.pending_email:
+            return None
+
+        normalized = text.strip().lower()
+        if any(k in normalized for k in ['cancel', 'stop', 'nevermind', 'never mind']):
+            self.pending_email = None
+            self.awaiting_login = False
+            return TaskResult(success=True, message='Email task cancelled.')
+
+        update = self._parse_email_parts(text)
+        updated = False
+        if update.get('to'):
+            self.pending_email['to'] = update['to']
+            updated = True
+        if update.get('subject'):
+            self.pending_email['subject'] = update['subject']
+            updated = True
+        if update.get('body'):
+            self.pending_email['body'] = update['body']
+            updated = True
+
+        ready_keywords = [
+            'continue', 'ready', 'logged in', 'signed in',
+            'go ahead', 'proceed', 'send it', 'send now'
+        ]
+
+        # If we already have everything, send when user confirms or after a full body update.
+        if self._is_ready_to_send(self.pending_email):
+            if any(k in normalized for k in ready_keywords) or updated:
+                return self._compose_and_send(self.pending_email)
+
+            return TaskResult(
+                success=True,
+                message="I have the recipient and body ready. Say 'continue' to send.",
+                data={'status': 'waiting_confirmation', 'task_id': self.pending_task_id}
+            )
+
+        # Still missing fields
+        if not self.pending_email.get('to'):
+            return TaskResult(
+                success=False,
+                message='Please provide the recipient email address.',
+                data={'status': 'missing_recipient', 'task_id': self.pending_task_id}
+            )
+
+        if not self.pending_email.get('body'):
+            return TaskResult(
+                success=False,
+                message='Please provide the email body.',
+                data={'status': 'missing_body', 'task_id': self.pending_task_id}
+            )
+
+        return None
+
+    def execute(self, command: Command) -> TaskResult:
+        action = command.slots.get('action', '').lower()
+
+        if action == 'continue':
+            if not self.pending_email:
+                return TaskResult(
+                    success=False,
+                    message='No pending email draft. Ask me to send an email first.'
+                )
+            return self._compose_and_send(self.pending_email)
+
+        to_addr = command.slots.get('to') or command.slots.get('recipient') or ''
+        subject = command.slots.get('subject', '').strip()
+        body = command.slots.get('body', '').strip()
+
+        task_id = self.pending_task_id or str(uuid.uuid4())
+        self.pending_task_id = task_id
+        task_title = f'Send email to {to_addr}' if to_addr else 'Send email'
+
+        if not to_addr:
+            self.pending_email = {
+                'to': '',
+                'subject': subject,
+                'body': body,
+            }
+            return TaskResult(
+                success=False,
+                message=(
+                    'Please provide a recipient.\n\n'
+                    'Example: send email to name@example.com subject: Hello body: Your message'
+                ),
+                data={'status': 'missing_recipient', 'task_id': task_id, 'task_title': task_title}
+            )
+
+        if not body:
+            self.pending_email = {
+                'to': to_addr,
+                'subject': subject,
+                'body': '',
+            }
+            return TaskResult(
+                success=False,
+                message=(
+                    'Please provide the email body.\n\n'
+                    'Example: send email to name@example.com subject: Hello body: Your message'
+                ),
+                data={'status': 'missing_body', 'task_id': task_id, 'task_title': task_title}
+            )
+
+        email = {
+            'to': to_addr,
+            'subject': subject,
+            'body': body,
+        }
+        self.pending_email = email
+        return self._compose_and_send(email)
+
+    def _parse_email_parts(self, text: str) -> Dict[str, str]:
+        """Extract recipient, subject, and body from free-form text."""
+        parts: Dict[str, str] = {}
+        email_match = re.search(r'[\w\.-]+@[\w\.-]+\.[a-z]{2,}', text, re.IGNORECASE)
+        if email_match:
+            parts['to'] = email_match.group(0)
+
+        subject_match = re.search(
+            r'(?:subject|subj)[:\-]\s*(.+?)(?:\s+(?:body|message)[:\-]|$)',
+            text,
+            re.IGNORECASE
+        )
+        if subject_match:
+            parts['subject'] = subject_match.group(1).strip().strip('"')
+
+        body_match = re.search(r'(?:body|message)[:\-]\s*(.+)$', text, re.IGNORECASE)
+        if body_match:
+            parts['body'] = body_match.group(1).strip().strip('"')
+        else:
+            # If no markers and we're likely providing the body, treat full text as body.
+            normalized = text.strip().lower()
+            if not any(k in normalized for k in ['send email', 'compose email', 'write email', 'continue', 'ready']):
+                parts['body'] = text.strip()
+
+        return parts
+
+    def _is_ready_to_send(self, email: dict) -> bool:
+        return bool(email.get('to') and email.get('body'))
+
+    def _compose_and_send(self, email: dict) -> TaskResult:
+        task_id = self.pending_task_id or str(uuid.uuid4())
+        self.pending_task_id = task_id
+        task_title = f"Send email to {email.get('to', '')}".strip()
+
+        try:
+            if not self.web._driver:
+                self.web.start()
+                self.web.open_url('https://mail.google.com/')
+                self.web.wait(3)
+            else:
+                current_url = self.web.get_current_url()
+                if not current_url:
+                    self.web.open_url('https://mail.google.com/')
+                    self.web.wait(2)
+                elif 'mail.google.com' not in current_url and 'accounts.google.com' not in current_url:
+                    # If we're on another site, keep the session but navigate to Gmail.
+                    self.web.open_url('https://mail.google.com/')
+                    self.web.wait(2)
+        except Exception as e:
+            return TaskResult(
+                success=False,
+                message=f'Could not open Gmail: {str(e)}',
+                data={'status': 'browser_error', 'task_id': task_id, 'task_title': task_title}
+            )
+
+        compose_xpaths = [
+            "//div[@role='button' and @gh='cm']",
+            "//div[@role='button' and @aria-label='Compose']",
+            "//div[@role='button' and contains(., 'Compose')]",
+            "//div[@role='button' and contains(., 'Write')]",
+            "//div[@role='button' and contains(., 'New message')]",
+            "//span[text()='Compose']/ancestor::div[@role='button']",
+            "//span[text()='Write']/ancestor::div[@role='button']"
+        ]
+
+        compose_clicked = False
+        for xpath in compose_xpaths:
+            if self.web.click_by_xpath(xpath, timeout=5):
+                compose_clicked = True
+                break
+
+        if not compose_clicked:
+            self.awaiting_login = True
+            return TaskResult(
+                success=True,
+                message=(
+                    "I'm ready to send the email. Please log in to your Gmail account in the browser.\n\n"
+                    "Once you can see your inbox, reply with: 'I'm logged in' or 'continue'."
+                ),
+                data={'status': 'awaiting_login', 'task_id': task_id, 'task_title': task_title}
+            )
+
+        # Fill recipient
+        to_filled = (
+            self.web.fill_input_by_xpath("//textarea[@name='to']", email['to']) or
+            self.web.fill_input_by_xpath("//input[@name='to']", email['to']) or
+            self.web.fill_input_by_xpath("//div[@aria-label='To']//input", email['to'])
+        )
+
+        # Fill subject (optional)
+        if email.get('subject'):
+            self.web.fill_input_by_xpath("//input[@name='subjectbox']", email['subject'])
+
+        # Fill body
+        body_filled = self.web.type_by_xpath("//div[@aria-label='Message Body']", email['body'])
+
+        send_clicked = False
+        send_xpaths = [
+            "//div[@role='button' and starts-with(@aria-label,'Send')]",
+            "//div[@role='button' and contains(@data-tooltip,'Send')]",
+            "//div[@role='button' and contains(., 'Send')]"
+        ]
+        for xpath in send_xpaths:
+            if self.web.click_by_xpath(xpath, timeout=5):
+                send_clicked = True
+                break
+
+        if to_filled and body_filled and send_clicked:
+            self.pending_email = None
+            self.awaiting_login = False
+            return TaskResult(
+                success=True,
+                message=f"Email sent to {email.get('to')} successfully.",
+                data={'status': 'sent', 'task_id': task_id, 'task_title': task_title}
+            )
+
+        # If we reached here, some step failed
+        return TaskResult(
+            success=True,
+            message=(
+                "I opened Gmail and started composing the email, but couldn't fully send it.\n\n"
+                "Please verify the To/Subject/Body fields, then click Send manually.\n"
+                "If you'd like me to retry, say: 'continue'."
+            ),
+            data={'status': 'needs_review', 'task_id': task_id, 'task_title': task_title}
+        )
+
+
 class OpenUrlTask(Task):
     name = 'open_url'
 
@@ -484,6 +947,34 @@ class FillFormTask(Task):
                     return TaskResult(
                         success=False,
                         message='❌ No browser open. First open a website with: "open [website]"'
+                    )
+            
+            if action == 'new_application' or 'new application' in command.raw_text.lower():
+                if self.web._driver:
+                    # Try to find and click new application button
+                    self.web.wait(1)
+                    success = (
+                        self.web.click_button_by_text('New Application') or
+                        self.web.click_button_by_text('Apply Now') or
+                        self.web.click_button_by_text('Start Application') or
+                        self.web.click_button_by_text('Create Application') or
+                        self.web.click_button_by_text('New')
+                    )
+                    if success:
+                        self.web.wait(2)  # Wait for form to load
+                        return TaskResult(
+                            success=True,
+                            message='✅ New Application button clicked!\n\nApplication form should be loading...\n\n💡 Say "auto fill" to fill the form automatically'
+                        )
+                    else:
+                        return TaskResult(
+                            success=False,
+                            message='❌ Could not find "New Application" button.\n\nThe button might have a different name or already be on the form page.'
+                        )
+                else:
+                    return TaskResult(
+                        success=False,
+                        message='❌ No browser open. First open the portal with: "riphah auto apply"'
                     )
             
             if action == 'enter' or 'press enter' in command.raw_text.lower():
@@ -828,10 +1319,12 @@ class TaskExecutor:
         self.register(SystemCommandTask())
         self.register(SearchTask(web))
         self.register(FileTask())
+        self.register(RiphahAutoApplyTask(web))
         self.register(AdmissionsTask(web))
         self.register(PolicyInfoTask())
         self.register(ExploreProgramsTask(web))
         self.register(AdmissionDatesTask(web))
+        self.register(SendEmailTask(web))
 
     def register(self, task: Task) -> None:
         self._tasks[task.name] = task
@@ -848,8 +1341,16 @@ class TaskExecutor:
                     '• "search [query]" - Search on Google\n'
                     '• "open [app]" - Open application\n'
                     '• "fill form" - Form filling help\n'
+                    '• "send email to [address]" - Compose and send email\n'
                     '• "apply for admission" - Riphah admission\n'
                     '• "help" - Show all commands'
                 ),
             )
         return task.execute(command)
+
+    def resume_pending(self, text: str) -> Optional[TaskResult]:
+        """Allow stateful tasks to resume when user confirms readiness."""
+        task = self._tasks.get('send_email')
+        if task and hasattr(task, 'resume_if_ready'):
+            return task.resume_if_ready(text)
+        return None

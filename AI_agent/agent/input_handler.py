@@ -111,6 +111,29 @@ class VoiceTextInputHandler:
                 if prefix in normalized:
                     slots['query'] = text[text.lower().find(prefix) + len(prefix):].strip()
                     break
+
+        # Send email
+        elif any(k in normalized for k in ['send email', 'send an email', 'email to', 'write email', 'compose email', 'send mail', 'mail to']):
+            intent = 'send_email'
+            email_match = re.search(r'[\w\.-]+@[\w\.-]+\.[a-z]{2,}', text, re.IGNORECASE)
+            if email_match:
+                slots['to'] = email_match.group(0)
+
+            subject_match = re.search(
+                r'(?:subject|subj)[:\-]\s*(.+?)(?:\s+(?:body|message)[:\-]|$)',
+                text,
+                re.IGNORECASE
+            )
+            if subject_match:
+                slots['subject'] = subject_match.group(1).strip().strip('"')
+
+            body_match = re.search(r'(?:body|message)[:\-]\s*(.+)$', text, re.IGNORECASE)
+            if body_match:
+                slots['body'] = body_match.group(1).strip().strip('"')
+            else:
+                saying_match = re.search(r'(?:saying|that says)\s+(.+)$', text, re.IGNORECASE)
+                if saying_match:
+                    slots['body'] = saying_match.group(1).strip()
         
         # Auto-fill form (automatic detection)
         elif any(k in normalized for k in ['auto fill', 'autofill', 'fill this form', 'fill the form', 'detect form', 'smart fill']):
@@ -132,6 +155,10 @@ class VoiceTextInputHandler:
         elif any(k in normalized for k in ['click submit', 'submit form', 'send form', 'submit']):
             intent = 'fill_form'
             slots['action'] = 'submit'
+        # Click new application button
+        elif any(k in normalized for k in ['click new application', 'new application', 'start application', 'create application']):
+            intent = 'fill_form'
+            slots['action'] = 'new_application'
         # Press enter
         elif 'press enter' in normalized or 'hit enter' in normalized:
             intent = 'fill_form'
@@ -155,6 +182,9 @@ class VoiceTextInputHandler:
             slots['operation'] = 'open'
             slots['path'] = os.path.expanduser('~/Documents')
         
+        # Riphah auto-apply (NEW!)
+        elif any(k in normalized for k in ['riphah auto apply', 'auto apply riphah', 'apply automatically', 'automatic apply', 'riphah apply now']):
+            intent = 'riphah_auto_apply'
         # Riphah-specific commands (keep existing)
         elif any(k in normalized for k in ['explore program', 'show program', 'available program', 'list program', 'what program', 'which program', 'programs offered', 'courses offered']):
             intent = 'explore_programs'

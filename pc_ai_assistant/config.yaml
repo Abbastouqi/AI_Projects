@@ -1,0 +1,37 @@
+admissions:
+  base_url: "https://admissions.riphah.edu.pk/riphah_demo/public/"
+  registration_url: "https://admissions.riphah.edu.pk/riphah_demo/public/registration"
+  login_url: "https://admissions.riphah.edu.pk/riphah_demo/public/"
+  applications_list_url: "https://admissions.riphah.edu.pk/riphah_demo/public/Student/application/List"
+  application_form_url: "https://admissions.riphah.edu.pk/riphah_demo/public/Student/application"
+
+  user_data_dir: "./browser_profile"
+  headless: false
+
+voice:
+  enabled: true
+  language: "en-US"
+
+
+campus: "Islamabad/Rawalpindi"
+level: "Undergraduate"
+program1: "BS Computer Science"   # Must match exact dropdown text
+
+first_name: "Touqeer"
+middle_name: ""
+last_name: "Abbas"
+nationality: "Pakistan"
+cnic: "3520212345678"
+gender: "Male"
+dob: "2000-05-15"
+father_name: "Abbas Ali"
+last_institute: "Punjab College"
+about_us: "Facebook"
+
+email: "abbastouqeer399@gmail.com"
+mobile: "03022994771"
+
+address: "House 12 Street 5 Islamabad"
+alternate_phone: "03001234567"
+country: "Pakistan"
+city: "Islamabad"

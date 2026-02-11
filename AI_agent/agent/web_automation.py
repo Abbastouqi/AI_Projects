@@ -47,6 +47,9 @@ class WebAutomation:
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('--start-maximized')  # Start maximized
+        options.add_argument('--disable-gpu')  # Disable GPU for stability
+        options.add_argument('--no-sandbox')  # Bypass OS security model
 
         try:
             if self.config.driver_path:
@@ -58,18 +61,18 @@ class WebAutomation:
                 # Auto-download and manage ChromeDriver via webdriver-manager
                 try:
                     driver_path = ChromeDriverManager().install()
+                    self._driver = webdriver.Chrome(
+                        service=Service(driver_path),
+                        options=options,
+                    )
                 except Exception as manager_error:
                     # If manager fails, try without explicit driver (system PATH)
-                    raise RuntimeError(
-                        f'Failed to download ChromeDriver: {str(manager_error)}. '
-                        f'Trying to use system Chrome...'
-                    )
-                self._driver = webdriver.Chrome(
-                    service=Service(driver_path),
-                    options=options,
-                )
+                    print(f'ChromeDriver manager failed: {manager_error}')
+                    print('Trying to use system Chrome...')
+                    self._driver = webdriver.Chrome(options=options)
         except Exception as e:
             # If browser fails to start, we'll handle it in task execution
+            print(f'ERROR: Failed to start browser: {str(e)}')
             raise RuntimeError(f'Failed to start browser: {str(e)}')
 
     def stop(self) -> None:
@@ -158,6 +161,55 @@ class WebAutomation:
                 EC.element_to_be_clickable((By.ID, element_id))
             )
             element.click()
+            return True
+        except Exception:
+            return False
+
+    def element_exists_by_xpath(self, xpath: str, timeout: float = 3) -> bool:
+        """Check if an element exists by XPath."""
+        try:
+            WebDriverWait(self._driver, timeout).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            return True
+        except Exception:
+            return False
+
+    def click_by_xpath(self, xpath: str, timeout: float = 10) -> bool:
+        """Click element by XPath."""
+        try:
+            element = WebDriverWait(self._driver, timeout).until(
+                EC.element_to_be_clickable((By.XPATH, xpath))
+            )
+            element.click()
+            return True
+        except Exception:
+            return False
+
+    def fill_input_by_xpath(self, xpath: str, value: str, clear_first: bool = True, timeout: float = 10) -> bool:
+        """Fill input or textarea by XPath."""
+        try:
+            element = WebDriverWait(self._driver, timeout).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            if clear_first:
+                try:
+                    element.clear()
+                except Exception:
+                    pass
+            element.send_keys(value)
+            return True
+        except Exception:
+            return False
+
+    def type_by_xpath(self, xpath: str, value: str, timeout: float = 10) -> bool:
+        """Type into a contenteditable element by XPath."""
+        try:
+            element = WebDriverWait(self._driver, timeout).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            element.click()
+            element.send_keys(value)
             return True
         except Exception:
             return False

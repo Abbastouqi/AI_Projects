@@ -6,7 +6,7 @@ from typing import Optional
 from agent.config import Config
 from agent.input_handler import Command, VoiceTextInputHandler
 from agent.speech_engine import SpeechEngine
-from agent.task_executor import TaskExecutor
+from agent.task_executor import TaskExecutor, TaskResult
 from agent.utils.logger import setup_logger
 from agent.web_automation import WebAutomation, WebAutomationConfig
 
@@ -51,28 +51,42 @@ class AgentController:
             else:
                 self._logger.warning('Microphone: Not available')
 
-    def handle_text(self, text: str, speak_response: bool = False) -> str:
-        command = self.input_handler.parse_command(text)
-        
-        # If user is on a form step and input is free-form, capture it
-        if self.workflow_state.current_step != 'initial' and command.intent == 'unknown':
-            response = self._handle_form_input(text)
+    def handle_text(self, text: str, speak_response: bool = False, return_result: bool = False):
+        result: Optional[TaskResult] = None
+
+        # Resume pending tasks if user confirms readiness
+        resume_result = self.tasks.resume_pending(text)
+        if resume_result:
+            result = resume_result
+            response = resume_result.message
         else:
-            # Process as normal command
-            result = self.tasks.execute(command)
-            self._logger.info('Intent=%s Success=%s', command.intent, result.success)
-            
-            # Update workflow state
-            if result.success and command.intent == 'admissions_apply':
-                self.workflow_state.current_intent = command.intent
-                self.workflow_state.current_step = command.slots.get('step', 'initial')
-            
-            response = result.message
-        
+            command = self.input_handler.parse_command(text)
+
+            # If user is on a form step and input is free-form, capture it
+            if self.workflow_state.current_step != 'initial' and command.intent == 'unknown':
+                response = self._handle_form_input(text)
+                result = TaskResult(success=True, message=response, data={
+                    'status': 'workflow',
+                    'step': self.workflow_state.current_step
+                })
+            else:
+                # Process as normal command
+                result = self.tasks.execute(command)
+                self._logger.info('Intent=%s Success=%s', command.intent, result.success)
+
+                # Update workflow state
+                if result.success and command.intent == 'admissions_apply':
+                    self.workflow_state.current_intent = command.intent
+                    self.workflow_state.current_step = command.slots.get('step', 'initial')
+
+                response = result.message
+
         # Speak response if TTS is enabled
         if speak_response and self.config.tts_enabled:
             self.speech_engine.speak(response, async_mode=True)
-        
+
+        if return_result:
+            return response, result
         return response
 
     def _handle_form_input(self, text: str) -> str:

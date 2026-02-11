@@ -1,0 +1,277 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PC AI Assistant — Admissions</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container py-4">
+    <header class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h4">PC AI Assistant — Admissions</h1>
+      <nav>
+        <span class="text-muted">Local server</span>
+      </nav>
+    </header>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Chatbot</h5>
+            <p class="card-text">Choose an action below. You can enter values by typing or using voice (browser must support Web Speech API).</p>
+
+            <div class="d-flex gap-2 mb-3">
+              <button id="btnLogin" class="btn btn-primary flex-fill">Login</button>
+              <button id="btnRegister" class="btn btn-secondary flex-fill">Register</button>
+              <button id="btnApply" class="btn btn-success flex-fill">Apply</button>
+            </div>
+
+            <div id="formsArea">
+              <!-- Forms will be injected here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Jobs</h5>
+            <ul id="jobsList" class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+
+        <div class="card mt-3 shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title">Notes</h6>
+            <ul>
+              <li>Use voice buttons next to fields to fill them via speech recognition.</li>
+              <li>Automation runs silently; job status will show success/failure.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-4 text-center text-muted small">PC AI Assistant — Admissions automation</footer>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Utility to create a voice filler for an input element
+function attachVoiceButton(btn, inputId){
+  btn.addEventListener('click', function(){
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition){ alert('Browser does not support SpeechRecognition'); return; }
+    const recog = new SpeechRecognition(); recog.lang='en-US'; recog.interimResults=false; recog.maxAlternatives=1; recog.start();
+    btn.textContent='Listening...'; btn.disabled=true;
+    recog.onresult = function(e){ document.getElementById(inputId).value = e.results[0][0].transcript; btn.textContent='Voice'; btn.disabled=false; };
+    recog.onerror = function(ev){ alert('Speech error: '+ev.error); btn.textContent='Voice'; btn.disabled=false; };
+    recog.onend = function(){ btn.textContent='Voice'; btn.disabled=false; };
+  });
+}
+
+// Text-to-speech function
+function speak(text){
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.9;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+function makeField(label, id, type='text', placeholder=''){
+  const div = document.createElement('div'); div.className='mb-2';
+  const lab = document.createElement('label'); lab.htmlFor = id; lab.textContent = label; lab.className='form-label';
+  const wrap = document.createElement('div'); wrap.className='input-group';
+  const inp = document.createElement('input'); inp.id = id; inp.name = id; inp.type = type; inp.className='form-control'; inp.placeholder = placeholder;
+  const btn = document.createElement('button'); btn.type='button'; btn.className='btn btn-outline-secondary'; btn.textContent='Voice';
+  wrap.appendChild(inp); wrap.appendChild(btn);
+  div.appendChild(lab); div.appendChild(wrap);
+  attachVoiceButton(btn, id);
+  return div;
+}
+
+function showLogin(){
+  const area = document.getElementById('formsArea'); area.innerHTML='';
+  const title = document.createElement('h6'); title.textContent='Login'; area.appendChild(title);
+  area.appendChild(makeField('Email','email','text','you@example.com'));
+  area.appendChild(makeField('Password','password','password',''));
+  const remember = document.createElement('input'); remember.type='checkbox'; remember.id='rememberLogin';
+  const rememberLab = document.createElement('label'); rememberLab.htmlFor='rememberLogin'; rememberLab.textContent=' Remember login on this PC';
+  const btn = document.createElement('button'); btn.className='btn btn-primary mt-2'; btn.textContent='Login';
+  btn.addEventListener('click', async ()=>{
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const payload = { action: 'login', command:'login', credentials:{email,password}, fields:{}, submit:false, remember: remember.checked };
+    const res = await fetch('/command',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await res.json(); lastJobId = j.job_id; jobCompleted = false; alert('Job queued: '+j.job_id); refreshJobs();
+  });
+  area.appendChild(document.createElement('br'));
+  area.appendChild(remember); area.appendChild(rememberLab);
+  area.appendChild(btn);
+  // Agent voice guidance
+  setTimeout(()=>{ speak('Please provide your login email and password. Click the voice buttons next to each field to enter them by speaking.'); }, 500);
+}
+
+function showRegister(){
+  const area = document.getElementById('formsArea'); area.innerHTML='';
+  const title = document.createElement('h6'); title.textContent='Register'; area.appendChild(title);
+  area.appendChild(makeField('Full name','reg_name','text','Your Name'));
+  area.appendChild(makeField('Mobile','reg_mobile','text','03xxxxxxxxx'));
+  area.appendChild(makeField('Email','reg_email','text','you@example.com'));
+  area.appendChild(makeField('Password','reg_password','password',''));
+  const remember = document.createElement('input'); remember.type='checkbox'; remember.id='rememberRegister';
+  const rememberLab = document.createElement('label'); rememberLab.htmlFor='rememberRegister'; rememberLab.textContent=' Remember login on this PC';
+  const btn = document.createElement('button'); btn.className='btn btn-secondary mt-2'; btn.textContent='Register';
+  btn.addEventListener('click', async ()=>{
+    const name = document.getElementById('reg_name').value;
+    const mobile = document.getElementById('reg_mobile').value;
+    const email = document.getElementById('reg_email').value;
+    const password = document.getElementById('reg_password').value;
+    const payload = { action: 'register', command:'register', credentials:{email,password,name,mobile}, fields:{}, submit:false, remember: remember.checked };
+    const res = await fetch('/command',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await res.json(); lastJobId = j.job_id; jobCompleted = false; alert('Job queued: '+j.job_id); refreshJobs();
+  });
+  area.appendChild(document.createElement('br'));
+  area.appendChild(remember); area.appendChild(rememberLab);
+  area.appendChild(btn);
+
+  const applyChk = document.createElement('input'); applyChk.type='checkbox'; applyChk.id='doSubmitRegApply';
+  const applyLab = document.createElement('label'); applyLab.htmlFor='doSubmitRegApply'; applyLab.textContent=' Submit application after register';
+  const applyBtn = document.createElement('button'); applyBtn.className='btn btn-success mt-2 ms-2'; applyBtn.textContent='Register & Apply';
+  applyBtn.addEventListener('click', async ()=>{
+    const name = document.getElementById('reg_name').value;
+    const mobile = document.getElementById('reg_mobile').value;
+    const email = document.getElementById('reg_email').value;
+    const password = document.getElementById('reg_password').value;
+    const payload = { action: 'register_apply', command:'register apply', credentials:{email,password,name,mobile}, fields:{}, submit: applyChk.checked, remember: remember.checked };
+    const res = await fetch('/command',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await res.json(); lastJobId = j.job_id; jobCompleted = false; alert('Job queued: '+j.job_id); refreshJobs();
+  });
+  area.appendChild(document.createElement('br'));
+  area.appendChild(applyChk); area.appendChild(applyLab);
+  area.appendChild(applyBtn);
+  // Agent voice guidance
+  setTimeout(()=>{ speak('Welcome to registration. Please provide your full name, mobile number, email, and password. Click the voice buttons to enter information by speaking.'); }, 500);
+}
+
+function showApply(){
+  const area = document.getElementById('formsArea'); area.innerHTML='';
+  const title = document.createElement('h6'); title.textContent='Apply for Admission'; area.appendChild(title);
+  area.appendChild(makeField('Email for login','email','text','you@example.com'));
+  area.appendChild(makeField('Password for login','password','password',''));
+  const remember = document.createElement('input'); remember.type='checkbox'; remember.id='rememberApply';
+  const rememberLab = document.createElement('label'); rememberLab.htmlFor='rememberApply'; rememberLab.textContent=' Remember login on this PC';
+  const chk = document.createElement('input'); chk.type='checkbox'; chk.id='doSubmit'; const lab = document.createElement('label'); lab.htmlFor='doSubmit'; lab.textContent=' Submit application (auto-fills from your profile)';
+  const btn = document.createElement('button'); btn.className='btn btn-success mt-2'; btn.textContent='Apply';
+  btn.addEventListener('click', async ()=>{
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const payload = { action: 'apply', command:'apply', credentials:{email,password}, fields:{}, submit: document.getElementById('doSubmit').checked, remember: remember.checked };
+    const res = await fetch('/command',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await res.json(); lastJobId = j.job_id; jobCompleted = false; alert('Job queued: '+j.job_id); refreshJobs();
+  });
+  area.appendChild(document.createElement('br'));
+  area.appendChild(remember); area.appendChild(rememberLab);
+  area.appendChild(document.createElement('br'));
+  area.appendChild(btn); area.appendChild(document.createElement('br'));
+  area.appendChild(chk); area.appendChild(lab);
+  // Agent voice guidance
+  setTimeout(()=>{ speak('Ready to apply for admission. Please provide your login email and password. Your profile information will be automatically filled in. Click the voice buttons to enter your credentials by speaking.'); }, 500);
+}
+
+// Quick command removed
+/*
+document.getElementById('sendFree').addEventListener('click', async ()=>{
+  const text = document.getElementById('freeCommand').value.trim();
+  if(!text){ alert('Enter a command'); return; }
+  console.log('Quick command:', text);
+  const btn = document.getElementById('sendFree');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  try {
+    const payload = { action: 'command', command: text, credentials:{}, fields:{}, submit:false };
+    const res = await fetch('/command',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await res.json();
+    console.log('Job response:', j);
+    alert('Job queued: ' + j.job_id);
+    document.getElementById('freeCommand').value = '';
+    refreshJobs();
+  } catch(e) {
+    console.error('Error:', e);
+    alert('Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send';
+  }
+});
+*/
+
+// Enter key support removed
+/*
+document.getElementById('freeCommand').addEventListener('keypress', function(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    document.getElementById('sendFree').click();
+  }
+});
+*/
+
+// Jobs refresh - no auto-reset
+let lastJobId = null;
+let jobCompleted = false;
+async function refreshJobs(){
+  const res = await fetch('/jobs');
+  const js = await res.json();
+  const ul = document.getElementById('jobsList'); ul.innerHTML='';
+  Object.keys(js).reverse().forEach(id => {
+    const li = document.createElement('li'); li.className='list-group-item'; 
+    const status = js[id].status;
+    const msg = js[id].message ? ' - ' + js[id].message : '';
+    
+    // Color code status
+    if(status === 'done') li.style.backgroundColor = '#d4edda'; // green
+    if(status === 'failed') li.style.backgroundColor = '#f8d7da'; // red
+    if(status === 'running') li.style.backgroundColor = '#d1ecf1'; // blue
+    
+    li.textContent = id + ': ' + status + msg; 
+    ul.appendChild(li);
+    
+    // Track last job but NO auto-reset
+    if(id === lastJobId && status === 'done' && !js[id].message){
+      speak('Application submitted successfully!');
+    }
+  });
+}
+setInterval(refreshJobs,3000); refreshJobs();
+
+// Button bindings
+document.getElementById('btnLogin').addEventListener('click', showLogin);
+document.getElementById('btnRegister').addEventListener('click', showRegister);
+document.getElementById('btnApply').addEventListener('click', showApply);
+
+// Add a "Reset" button to manually start over
+const resetBtn = document.createElement('button');
+resetBtn.id = 'btnReset';
+resetBtn.className = 'btn btn-secondary mt-3';
+resetBtn.textContent = 'Start New Application';
+resetBtn.addEventListener('click', () => {
+  lastJobId = null;
+  jobCompleted = false;
+  document.getElementById('formsArea').innerHTML = '';
+  speak('Ready for a new application. Choose an action: Login, Register, or Apply.');
+});
+document.querySelector('.card-body').appendChild(resetBtn);
+
+// Initial voice greeting
+setTimeout(()=>{ speak('Welcome to the Admissions Assistant. You can login, register, or apply for admission. Click on the button for what you would like to do.'); }, 1000);
+
+// Show apply by default
+showApply();
+</script>
+</body>
+</html>

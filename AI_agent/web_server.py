@@ -7,6 +7,8 @@ import threading
 import base64
 import io
 import wave
+import uuid
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 CORS(app)
@@ -17,6 +19,67 @@ controller = AgentController(config)
 
 # Store conversation history
 conversation_history = []
+# Store task history for UI
+task_history = []
+
+WAITING_STATUSES = {
+    'login_required',
+    'awaiting_login',
+    'missing_recipient',
+    'missing_body',
+    'needs_review',
+    'manual_required',
+}
+
+RUNNING_STATUSES = {
+    'opened',
+    'portal_opened',
+    'form_filled',
+    'manual',
+    'submission_ready',
+}
+
+
+def _status_from_result(result):
+    data = result.data or {}
+    status = data.get('status', '')
+    if status in WAITING_STATUSES:
+        return 'waiting'
+    if status in RUNNING_STATUSES:
+        return 'running'
+    return 'done' if result.success else 'error'
+
+
+def _title_from_message(message: str) -> str:
+    title = message.strip()
+    if len(title) > 48:
+        return title[:45].rstrip() + '...'
+    return title or 'New task'
+
+
+def _upsert_task(user_message: str, result):
+    if not result:
+        return None
+    data = result.data or {}
+    task_id = data.get('task_id') or str(uuid.uuid4())
+    title = data.get('task_title') or _title_from_message(user_message)
+    status = _status_from_result(result)
+    detail = data.get('task_detail') or (result.message.splitlines()[0] if result.message else '')
+    task = {
+        'id': task_id,
+        'title': title,
+        'status': status,
+        'detail': detail,
+        'updated_at': datetime.now(timezone.utc).isoformat()
+    }
+
+    for idx, existing in enumerate(task_history):
+        if existing['id'] == task_id:
+            task_history[idx].update(task)
+            return task_history[idx]
+
+    task_history.insert(0, task)
+    return task
 
 
 @app.route('/')
@@ -36,17 +99,20 @@ def chat():
             return jsonify({'error': 'Empty message'}), 400
         
         # Process the message
-        response = controller.handle_text(user_message, speak_response=False)
+        response, result = controller.handle_text(user_message, speak_response=False, return_result=True)
         
         # Store in history
         conversation_history.append({
             'user': user_message,
             'agent': response
         })
+
+        task_entry = _upsert_task(user_message, result)
         
         return jsonify({
             'success': True,
             'response': response,
+            'task': task_entry,
             'timestamp': None
         })
     
@@ -128,11 +194,21 @@ def history():
     })
 
 
+@app.route('/api/tasks', methods=['GET'])
+def tasks():
+    """Get task history for UI"""
+    return jsonify({
+        'success': True,
+        'tasks': task_history
+    })
+
+
 @app.route('/api/clear', methods=['POST'])
 def clear():
     """Clear conversation history"""
     global conversation_history
     conversation_history = []
+    task_history.clear()
     controller.workflow_state.reset()
     
     return jsonify({
@@ -143,14 +219,14 @@ def clear():
 
 if __name__ == '__main__':
     print("="*70)
-    print("🌐 Starting Web Chatbot Server")
+    print("Starting Web Chatbot Server")
     print("="*70)
-    print("\n📊 System Status:")
-    print(f"  • Voice Input: {'✅ Enabled' if config.voice_enabled else '❌ Disabled'}")
-    print(f"  • Voice Output: {'✅ Enabled' if config.tts_enabled else '❌ Disabled'}")
-    print("\n🔗 Access the chatbot at:")
+    print("\nSystem Status:")
+    print(f"  - Voice Input: {'Enabled' if config.voice_enabled else 'Disabled'}")
+    print(f"  - Voice Output: {'Enabled' if config.tts_enabled else 'Disabled'}")
+    print("\nAccess the chatbot at:")
     print("  http://localhost:5000")
-    print("\n⚠️ Press Ctrl+C to stop the server")
+    print("\nPress Ctrl+C to stop the server")
     print("="*70 + "\n")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
