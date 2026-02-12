@@ -76,11 +76,26 @@ def register_then_login(config: dict):
         driver.get(reg_url)
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "firstname")))
 
-        driver.find_element(By.NAME, "firstname").send_keys(reg["name"])
-        driver.find_element(By.NAME, "mobile").send_keys(reg["mobile"])
-        driver.find_element(By.NAME, "email").send_keys(reg["email"])
-        driver.find_element(By.NAME, "password").send_keys(reg["password"])
-        driver.find_element(By.NAME, "rpassword").send_keys(reg["password"])
+        # Clear all fields first to avoid duplicate values
+        firstname_field = driver.find_element(By.NAME, "firstname")
+        firstname_field.clear()
+        firstname_field.send_keys(reg["name"])
+        
+        mobile_field = driver.find_element(By.NAME, "mobile")
+        mobile_field.clear()
+        mobile_field.send_keys(reg["mobile"])
+        
+        email_field = driver.find_element(By.NAME, "email")
+        email_field.clear()
+        email_field.send_keys(reg["email"])
+        
+        password_field = driver.find_element(By.NAME, "password")
+        password_field.clear()
+        password_field.send_keys(reg["password"])
+        
+        rpassword_field = driver.find_element(By.NAME, "rpassword")
+        rpassword_field.clear()
+        rpassword_field.send_keys(reg["password"])
 
         driver.find_element(By.ID, "register-submit-btn").click()
 
@@ -96,8 +111,15 @@ def register_then_login(config: dict):
         driver.get(base_url)
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "email")))
 
-        driver.find_element(By.NAME, "email").send_keys(reg["email"])
-        driver.find_element(By.NAME, "password").send_keys(reg["password"])
+        # Clear fields first to avoid duplicate values from cached form data
+        email_field = driver.find_element(By.NAME, "email")
+        email_field.clear()
+        email_field.send_keys(reg["email"])
+        
+        password_field = driver.find_element(By.NAME, "password")
+        password_field.clear()
+        password_field.send_keys(reg["password"])
+        
         _click_login_button(driver)
 
         try:
@@ -125,8 +147,15 @@ def login_only(config: dict):
         driver.get(base_url)
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "email")))
 
-        driver.find_element(By.NAME, "email").send_keys(creds["email"])
-        driver.find_element(By.NAME, "password").send_keys(creds["password"])
+        # Clear fields first to avoid duplicate values from cached form data
+        email_field = driver.find_element(By.NAME, "email")
+        email_field.clear()
+        email_field.send_keys(creds["email"])
+        
+        password_field = driver.find_element(By.NAME, "password")
+        password_field.clear()
+        password_field.send_keys(creds["password"])
+        
         _click_login_button(driver)
 
         try:
