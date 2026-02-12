@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Modal</title>
+    <style>
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <button onclick="showApplyModal()">Click to Open Modal</button>
+    
+    <div class="modal" id="applyModal">
+        <div class="modal-content">
+            <h2>Apply Modal</h2>
+            <p>This is the apply modal!</p>
+            <button onclick="closeModal('applyModal')">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        function showApplyModal() {
+            console.log('showApplyModal called');
+            const modal = document.getElementById('applyModal');
+            console.log('Modal element:', modal);
+            modal.classList.add('active');
+            console.log('Modal classes:', modal.classList);
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+    </script>
+</body>
+</html>
